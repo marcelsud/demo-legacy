@@ -1,0 +1,18 @@
+pipeline:
+  publish-push:
+    image: plugins/docker
+    repo: marcelsud/demo
+    tags:
+      - ${DRONE_COMMIT_BRANCH}
+    force_tag: true
+    secrets: [ docker_username, docker_password ]
+  
+  deploy:
+    image: marcelsud/kubectl
+    pull: true
+    commands:
+      - echo $KUBECONFIG_DATA > /tmp/kubeconfig
+      - kubectl set image deployment.apps/demo-deployment demo=marcelsud/demo:${DRONE_COMMIT_BRANCH} --namespace=default --kubeconfig=/tmp/kubeconfig
+    secrets:
+      - kubeconfig_data
+
